@@ -7,10 +7,9 @@ install_foundationdb() {
   local install_type=$1
   local version=$2
   local install_path=$3
-  local platform="$(uname | tr '[:upper:]' '[:lower:]')-amd64"
-  local bin_install_path="$install_path/bin"
-  local binary_path="$bin_install_path/foundationdb"
-  local download_url=$(get_download_url $version $platform)
+  local platform="$(uname | tr '[:upper:]' '[:lower:]')"
+  local arch="$(uname -m)"
+  local download_url=$(get_download_url $platform $arch $version)
 
   if [ "$TMPDIR" = "" ]; then
     local tmp_download_dir=$(mktemp -d -t foundationdb_XXXXXX)
@@ -18,37 +17,38 @@ install_foundationdb() {
     local tmp_download_dir=$TMPDIR
   fi
 
-  mkdir -p "${bin_install_path}"
+  mkdir -p "${install_path}"
 
-  local download_path="$tmp_download_dir/$(get_filename ${platform} ${version})"
+  local download_path="$tmp_download_dir/$(get_filename ${platform} ${arch} ${version})"
+  local pkg_install_path="$tmp_download_dir/pkg"
 
   echo "Downloading foundationdb from ${download_url} to ${binary_path}"
   curl -Lo $download_path $download_url
 
-  echo "Creating bin directory"
-  mkdir -p "${bin_install_path}"
+  echo "Creating tmp directory"
+  mkdir -p "${pkg_install_path}"
 
-  echo "Cleaning previous binaries"
-  rm -f $binary_path 2>/dev/null || true
+  echo "Extracting the pkg"
+  xar -xf ${download_path} -C "${pkg_install_path}"
 
-  echo "Copying binary"
-  tar -zxf ${download_path} --directory $tmp_download_dir
-  cp ${tmp_download_dir}/foundationdb-${platform} ${bin_install_path}/foundationdb
-
-  chmod +x ${binary_path}
+  echo "Extracting the payload"
+  cd "${install_path}"
+  gzcat ${pkg_install_path}/FoundationDB-clients.pkg/Payload | cpio -i -m --quiet
 }
 
 get_filename() {
     local platform="$1"
-    local version="$2"
+    local arch="$2"
+    local version="$3"
 
-    echo "foundationdb-${platform}.zip"
+    echo "FoundationDB-${version}_${arch}.pkg"
 }
 
 get_download_url() {
-  local version="$1"
-  local platform="$2"
-  local filename="$(get_filename ${platform} ${version})"
+  local platform="$1"
+  local arch="$2"
+  local version="$3"
+  local filename="$(get_filename ${platform} ${arch} ${version})"
   echo "https://github.com/apple/foundationdb/releases/download/${version}/${filename}"
 }
 
