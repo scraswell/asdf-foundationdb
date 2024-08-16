@@ -28,8 +28,8 @@ install_foundationdb() {
   fi
 
   mkdir -p "${install_path}"
-  echo "creating symlink ${HOME}/.local/lib/foundationdb => ${install_path}"
-  ln -s "${install_path}" "${HOME}/.local/lib/foundationdb"
+  echo "creating symlink ${HOME}/.local/lib/foundationdb => ${install_path}/.."
+  ln -s "${install_path}/.." "${HOME}/.local/lib/foundationdb"
 
   local download_path="$tmp_download_dir/$(get_filename ${platform} ${arch} ${version})"
   local pkg_install_path="$tmp_download_dir/pkg"
