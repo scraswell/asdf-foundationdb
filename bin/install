@@ -17,7 +17,19 @@ install_foundationdb() {
     local tmp_download_dir=$TMPDIR
   fi
 
+  if [ ! -d "${HOME}/.local/lib" ]; then
+    echo "creating ${HOME}/.local/lib"
+    mkdir -p "${HOME}/.local/lib"
+  fi
+
+  if [ -s "${HOME}/.local/lib/foundationdb" ]; then
+    echo "removing old symlink ${HOME}/.local/lib/foundationdb"
+    rm "${HOME}/.local/lib/foundationdb"
+  fi
+
   mkdir -p "${install_path}"
+  echo "creating symlink ${HOME}/.local/lib/foundationdb => ${install_path}"
+  ln -s "${install_path}" "${HOME}/.local/lib/foundationdb"
 
   local download_path="$tmp_download_dir/$(get_filename ${platform} ${arch} ${version})"
   local pkg_install_path="$tmp_download_dir/pkg"
