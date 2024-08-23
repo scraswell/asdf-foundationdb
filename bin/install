@@ -46,6 +46,9 @@ install_foundationdb() {
   echo "Extracting the payload"
   cd "${install_path}"
   gzcat ${pkg_install_path}/FoundationDB-clients.pkg/Payload | cpio -i -m --quiet
+
+  echo "Modifying the LC_ID_DYLIB field such that the linker can find the .dylib..."
+  install_name_tool -id "${install_path}/usr/local/lib/libfdb_c.dylib" "${install_path}/usr/local/lib/libfdb_c.dylib"
 }
 
 get_filename() {
